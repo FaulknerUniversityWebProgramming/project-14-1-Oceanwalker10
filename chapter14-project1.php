@@ -26,7 +26,6 @@ function outputEmployee() {
  * Displays the address of the selected Employee
  */
 function outputAddress() {
-//    echo '1';
     try {
         if (isset($_GET['employees']) && $_GET['employees'] > 0) {
             $pdo = new PDO(DBCONNSTRING,DBUSER,DBPASS);
@@ -50,6 +49,42 @@ function outputAddress() {
         die($ex->getMessage());
     }
 }
+
+/*
+ * Displays the to do list of he selected Employee
+ */
+function outputToDo() {
+    try {
+        if (isset($_GET['employees']) && $_GET['employees'] > 0) {
+            $pdo = new PDO(DBCONNSTRING,DBUSER,DBPASS);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            $sql = 'select * from employeetodo where EmployeeID=:employees order by DateBy';
+            $id =  $_GET['employees'];
+            $statement = $pdo->prepare($sql);
+            $statement->bindValue(':employees', $id);
+            $statement->execute();
+            
+            while ($row = $statement->fetch()) {
+                outputSingleToDo($row);
+            }
+            $pdo = null;
+        } 
+    } catch (PDOException $ex) {
+        die($ex->getMessage());
+    }
+}
+
+/*
+ * Displays a single to do
+ */
+function outputSingleToDo($row) {
+    echo '<tr><td>' . $row['DateBy'] . '</td><td>'
+    . $row['Status'] .'</td><td>'
+    . $row['Priority'] .'</td><td class="text-left">'
+    . $row['Description'] .'</td></tr>';
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -66,7 +101,7 @@ function outputAddress() {
     <link rel="stylesheet" href="css/styles.css">
 
 
-    <script   src="https://code.jquery.com/jquery-1.7.2.min.js" ></script>
+    <script src="https://code.jquery.com/jquery-1.7.2.min.js" ></script>
 
     <script src="https://code.getmdl.io/1.1.3/material.min.js"></script>
 
@@ -145,7 +180,7 @@ function outputAddress() {
                                         </thead>
                                         <tbody>
 
-                                        <?php /*  display TODOs  */ ?>
+                                        <?php /*  display TODOs  */ outputToDo();?>
 
                                         </tbody>
                                     </table>
