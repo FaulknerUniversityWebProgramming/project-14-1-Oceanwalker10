@@ -11,20 +11,45 @@ function outputEmployee() {
         $sql = "select * from employees order by LastName";
         $result = $pdo->query($sql);
         while ($row = $result->fetch()) {
-            echo '<li><a href="' . $_SERVER["SCRIPT_NAME"] . '?employee=' . $row['EmployeeID'] . '" class=';
-            if (isset($_GET['id']) && $_GET['id'] == $row['EmployeeID']) {
-                echo 'active';
-            }
+            echo '<li><a href="' . $_SERVER["SCRIPT_NAME"] . '?employees=' . $row['EmployeeID'] . '" class="';
+            if (isset($_GET['employees']) && $_GET['employees'] == $row['EmployeeID']) echo 'active ';
             echo 'item">';
-            echo $row['FirstName'] . ' ' . $row['LastName'] . '</a></li>';
-        }
+            echo $row['FirstName'] .' '. $row['LastName'] . '</a></li>';
+         }
         $pdo = null;
-    } catch (Exception $ex) {
+    } catch (PDOException $ex) {
         die($ex->getMessage());
     }
 }
 
-
+/*
+ * Displays the address of the selected Employee
+ */
+function outputAddress() {
+//    echo '1';
+    try {
+        if (isset($_GET['employees']) && $_GET['employees'] > 0) {
+            $pdo = new PDO(DBCONNSTRING,DBUSER,DBPASS);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            $sql = 'select * from employees where EmployeeID=:employees';
+            $id =  $_GET['employees'];
+            $statement = $pdo->prepare($sql);
+            $statement->bindValue(':employees', $id);
+            $statement->execute();
+            $row = $statement->fetch();
+            
+            echo '<h3>' . $row['FirstName'] . ' ' . $row['LastName'] . '</h1>'
+                    . '<p>' . $row['Address'] . '<br>'
+                    . $row['City'] . ', ' . $row['Region'] . '<br>'
+                    . $row['Country'] . ', ' . $row['Postal'] . '<br>'
+                    . $row['Email'] . '</p>';
+            $pdo = null;
+        } 
+    } catch (PDOException $ex) {
+        die($ex->getMessage());
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -69,9 +94,13 @@ function outputEmployee() {
                             <ul class="demo-list-item mdl-list">
 
                             <?php
+                                /* 
+                                 * programmatically loop though employees and 
+                                 * display each name as <li> element. 
+                                 */ 
                                 outputEmployee();
                             ?>            
-
+                            
                             </ul>
                         </div>
                     </div>  <!-- / mdl-cell + mdl-card -->
@@ -90,9 +119,10 @@ function outputEmployee() {
                                 </div>
 
                                 <div class="mdl-tabs__panel is-active" id="address-panel">
-
+                                    
                                     <?php
                                     /* display requested employee's information */
+                                        outputAddress();
                                     ?>
 
 
@@ -115,7 +145,7 @@ function outputEmployee() {
                                         </thead>
                                         <tbody>
 
-<?php /*  display TODOs  */ ?>
+                                        <?php /*  display TODOs  */ ?>
 
                                         </tbody>
                                     </table>
