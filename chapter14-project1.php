@@ -51,6 +51,32 @@ function outputAddress() {
 }
 
 /*
+ * function to check if the to do list is empty. If it is empty, 
+ * display the message
+ */
+function checkToDo(){
+    try {
+        if (isset($_GET['employees']) && $_GET['employees'] > 0) {
+            $pdo = new PDO(DBCONNSTRING,DBUSER,DBPASS);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            $sql = 'select * from employeetodo where EmployeeID=:employees order by DateBy';
+            $id =  $_GET['employees'];
+            $statement = $pdo->prepare($sql);
+            $statement->bindValue(':employees', $id);
+            $statement->execute();
+            $row = $statement->fetch();
+            if (!(isset($row[ToDoID]))) {
+                echo '<h3>This employee does not have a to do list.<h3>';
+            }
+            $pdo = null;
+        } 
+    } catch (PDOException $ex) {
+        die($ex->getMessage());
+    }
+}
+
+/*
  * Displays the to do list of he selected Employee
  */
 function outputToDo() {
@@ -167,6 +193,7 @@ function outputSingleToDo($row) {
                                     <?php
                                     /* retrieve for selected employee;
                                     if none, display message to that effect */
+                                    checkToDo();
                                     ?>                                  
 
                                     <table class="mdl-data-table  mdl-shadow--2dp">
